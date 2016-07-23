@@ -5,6 +5,7 @@ Structures and data are appropriately complex and specialized in order to ensure
 
 Some of rogue-book chapter 1 belongs here. Also see spbabel wiki, and discussions in spbabel, spdplyr, babelfish, nf and the gis3d and polygons blog posts. 
 
+The polygons blog post: needs to show another cheating hole, which is to leave out the border colour (as ggplot2 does). This needs a reasonable discusion. 
 
 ## Terminology
 
