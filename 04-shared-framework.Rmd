@@ -5,7 +5,9 @@
 tidyr and gggeom show that nesting can be used to always work in a single table, and sp can be emulated with single-nesting of the fortify table, or more closely with double nesting, first on object and then on piece. gggeom keeps attributes in separate lists, in order to allow for different numbers of values in each (though tables can do that too . . .). 
 
 The main issues with nesting into one table, with nested components, are that: 
+
 * it doesn't allow for many-to-one de-duplication indexing (unless the nested component stores an index to another table - but that's not one  table). 
+
 * it's not readily backed by a database
 
 A system of normalized tables is ready for transfer to a database, and can be read directly from a database *without any specialist tools for special types*

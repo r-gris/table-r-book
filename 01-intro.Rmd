@@ -25,3 +25,6 @@ While it's not really part of my goal here, I think it's important to also be cl
 * geometric dimension is the number of attributes applied to the vertices of a primitive, e.g. \[x,y\] or \[lon,lat,time\] or \[x,y,z,date\] or \[time,lon,temperature,magnitude\]. 
 
 It's important to realize that _spatial_ data has no need to stick to certain conventions, and that the topology of a graph is a certain case of a spatial map. If one axis is time, and the other longitude it's not the business of the data representation to apply these distinctions - that is for the user/researcher. 
+
+List examples where the topology/geometry conflation is made . . .
+
