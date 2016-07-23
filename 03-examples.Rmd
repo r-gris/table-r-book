@@ -12,15 +12,6 @@ sp to spbabel to ggplot2
 
 ggplot2 to spbabel to sp
 
-## Relations and the difference between sp and ggplot2 forms
-
-There's a difficulty for non-experts to deal with relational data, there's a level of abstraction in the process that provides confusion. We see this in many fields, where a single table is the basic unit of analysis and the lessons of database normalization are nowhere to be seen. A common example is animal tracking data, which at the minimum stores a trip (or burst or group) ID, x, y, date-time, and may include individual or tag ID (object). Technically, these data should have a metadata table with observations about the tag deployment (date, location, recovery, animal departure/return date), an individual table with observations on the animal species, and the table of coordinates of the actual tag space-time measurements. 
-
-This is a well- recognized problem, especially in collaborative studies where the entire data set is stored in a CSV ... probably less ranting here, but the relational table example is a good one. 
-
-A key definition here is the idea of a structural index (the row or column number in a table or array) versus a relational index where the value of a key is used to match records. The relational index can be transferred from one data set to another by subsetting and appending, and survive resorting generally - but the structural index cannot - it must either be maintained in its position or be updated when the overal dataset is subsetted, or changed. 
-
-Recurrisve objects like lists in R stand in place of both structurual and relational indexes, the structure of the list is an implicit marker of the index - though it might also store a particular label. 
 
 
 
@@ -41,4 +32,15 @@ creation of gris objects from Rvcg/rgl
 
 ## gris - four tables with vertex topology
 
+
+# Examples of applying the "gris framework"
+
+Sp objects
+
+sf objects
+
+ggplot2 objects
+
+rgl objects
+- difference when closed tetrahedron mesh or qmesh are used
 

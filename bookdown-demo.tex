@@ -1,0 +1,363 @@
+\documentclass[]{book}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={A Minimal Book Example},
+            pdfauthor={Yihui Xie},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{natbib}
+\bibliographystyle{apalike}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{{#1}}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{{#1}}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\ImportTok}[1]{{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{{#1}}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{{#1}}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{{#1}}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{{#1}}}}
+\newcommand{\BuiltInTok}[1]{{#1}}
+\newcommand{\ExtensionTok}[1]{{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{{#1}}}
+\newcommand{\RegionMarkerTok}[1]{{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{{#1}}}}
+\newcommand{\NormalTok}[1]{{#1}}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\usepackage{booktabs}
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{A Minimal Book Example}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Yihui Xie}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{2016-07-23}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{1}
+\tableofcontents
+}
+\chapter{Prerequisites}\label{prerequisites}
+
+This is a \emph{sample} book written in \textbf{Markdown}. You can use
+anything that Pandoc's Markdown supports, e.g., a math equation
+\(a^2 + b^2 = c^2\).
+
+For now, you have to install the development versions of
+\textbf{bookdown} from Github:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{devtools::}\KeywordTok{install_github}\NormalTok{(}\StringTok{"rstudio/bookdown"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Remember each Rmd file contains one and only one chapter, and a chapter
+is defined by the first-level heading \texttt{\#}.
+
+To compile this example to PDF, you need to install XeLaTeX.
+
+\chapter{Introduction}\label{intro}
+
+Structures and data are appropriately complex and specialized in order
+to ensure rigour and efficiency.
+
+Spatial means more than maps in at least the sense that
+
+\section{Terminology}\label{terminology}
+
+Branch, piece/part, object, vertex, coordinate
+
+object attribute metadata
+
+\chapter{The GIS contract}\label{the-gis-contract}
+
+GIS provides a table-based front-end where there is a one-to-one
+relationship between a geometric object, and a row in a table that
+contains attribute metadata about that object. I call this the ``GIS
+contract'', and you can see this in the linked selections (brushing) in
+QGIS, Manifold and other systems.
+
+\chapter{\texorpdfstring{The \textbf{sp}
+package}{The sp package}}\label{the-sp-package}
+
+Spatial classes, formal inheritance, heirarchical objects.
+
+The Spatial classes provided by the sp package are very widely used
+because they provide the formal guarantee of the GIS contract, and use
+this for a systematic coupling with other tools:
+
+\begin{itemize}
+\item
+  the huge number of formats provided by GDAL input/output
+\item
+  powerful high-level methods for visualization, manipulation, analysis
+  and modelling
+\item
+\end{itemize}
+
+The attribute metadata are discrete but the geometry is continuous.
+Spatial topology ties the geometry together, and database topology ties
+the system together.
+
+\chapter{\texorpdfstring{The \textbf{ggplot2}
+package}{The ggplot2 package}}\label{the-ggplot2-package}
+
+Data frames are the fundamental unit for \textbf{ggplot2}, but for
+spatial data the first step is to decompose the hierarchical complexity
+of a Spatial object to a single data frame.
+
+This breaks the ``GIS contract'', since the individual objects are now
+spread over multiple rows of the table of coordinates.
+
+\chapter{Pros and cons}\label{pros-and-cons}
+
+Ability to user-choose attributes from the data - independence of
+analysis from the visualization
+
+\section{Relations and the difference between sp and ggplot2
+forms}\label{relations-and-the-difference-between-sp-and-ggplot2-forms}
+
+There's a difficulty for non-experts to deal with relational data,
+there's a level of abstraction in the process that provides confusion.
+We see this in many fields, where a single table is the basic unit of
+analysis and the lessons of database normalization are nowhere to be
+seen. A common example is animal tracking data, which at the minimum
+stores a trip (or burst or group) ID, x, y, date-time, and may include
+individual or tag ID (object). Technically, these data should have a
+metadata table with observations about the tag deployment (date,
+location, recovery, animal departure/return date), an individual table
+with observations on the animal species, and the table of coordinates of
+the actual tag space-time measurements.
+
+This is a well- recognized problem, especially in collaborative studies
+where the entire data set is stored in a single CSV \ldots{} {[}probably
+less ranting here,{]} but the relational table example is a good one.
+
+A key definition here is the idea of a structural index (the row or
+column number in a table or array) versus a relational index where the
+value of a key is used to match records. The relational index can be
+transferred from one data set to another by subsetting and appending,
+and survive resorting generally - but the structural index cannot - it
+must either be maintained in its position or be updated when the overal
+dataset is subsetted, or changed.
+
+Recurisve objects like lists in R stand in place of both structurual and
+relational indexes, the structure of the list is an implicit marker of
+the index - though it might also store a particular label.
+
+\chapter{Examples}\label{examples}
+
+\section{spbabel - two tables - round trip for sp and
+ggplot2}\label{spbabel---two-tables---round-trip-for-sp-and-ggplot2}
+
+The spbabel package provides a straightforward workflow for converting
+from sp Spatial objects to a single table of all coordinates (analogous
+to the fortify table), and back again.
+
+This requires working with two tables, and can be considered as simply
+starting with the sp object metadata table and then flattening out the
+geometry of each piece of each object into a single table - this table
+stores the x, y coordinates, a part identifier, a hole/island identifier
+for parts, the order of the coordinates within a part, and the object
+id. This could be a single table if all of the object metadata
+attributes were copied onto all of the coordinates for each object - but
+this is both wasteful and untidy in the sense that errors can be
+introduced when a one-to-many relationship is duplicated across the
+object ID and all the metadata values. Also may be inefficient (or not
+given factor/character tricks, rle and so on).
+
+Examples
+
+sp to spbabel to ggplot2
+
+ggplot2 to spbabel to sp
+
+\section{rgl - structural indices}\label{rgl---structural-indices}
+
+All rgl functions that plot linked coordinates use primitives (line
+segments or triangles or quads) that are encoded as indexes into
+coordinate arrays. There is no requirement that the coordinates be
+unique, but they can be. Some rgl functions are use literally as an
+index into 3-coords, and others use homogeneous coordinates with a 4th
+coord (set this to one for the 3-coords behaviour).
+
+Rgl includes an ear clipping triangulation algorithm so that polygons
+can be converted to a surface composed of primitives. These surfaces are
+much more general than GIS polygons or triangulations, since they can
+``wrap -around''. A clear example is given in tetrahedron3d() and in
+oh3d(). Ear clipping is fast, non-convex, and preserves input edges but
+is otherwise not suited for choosing well-formed triangles.
+
+The crux for the storage of objects in rgl is that each object is
+standalone and there's no native set for storage of more than one
+object.
+
+Show creation of rgl objects from Spatial
+
+creation of gris objects from Rvcg/rgl
+
+\emph{This point is a general one in terms of the relational
+hierarchies}.
+
+\section{gris - four tables with vertex
+topology}\label{gris---four-tables-with-vertex-topology}
+
+\chapter{\texorpdfstring{Examples of applying the ``gris
+framework''}{Examples of applying the gris framework}}\label{examples-of-applying-the-gris-framework}
+
+Sp objects
+
+sf objects
+
+ggplot2 objects
+
+rgl objects - difference when closed tetrahedron mesh or qmesh are used
+
+\chapter{A shared framework for disparate spatial systems in
+R?}\label{a-shared-framework-for-disparate-spatial-systems-in-r}
+
+\section{Nesting}\label{nesting}
+
+tidyr and gggeom show that nesting can be used to always work in a
+single table, and sp can be emulated with single-nesting of the fortify
+table, or more closely with double nesting, first on object and then on
+piece. gggeom keeps attributes in separate lists, in order to allow for
+different numbers of values in each (though tables can do that too . .
+.).
+
+The main issues with nesting into one table, with nested components, are
+that: * it doesn't allow for many-to-one de-duplication indexing (unless
+the nested component stores an index to another table - but that's not
+one table). * it's not readily backed by a database
+
+A system of normalized tables is ready for transfer to a database, and
+can be read directly from a database \emph{without any specialist tools
+for special types}
+
+\section{Decomposition to relational
+tables}\label{decomposition-to-relational-tables}
+
+We have seen that a wide variety of data configurations can be converted
+to a set of relational tables and that these give systematic and
+straightforward pathways for reconstructing other forms. This provides
+the opportunity for an API where specialized packages provide the
+special methods to convert from and to the shared form, and so many
+conversions then become automatic and easy.
+
+Can we create simple idioms to encode decomposition from recursive
+objects generally? The cascading semi-join makes for very simple
+propagation of a subset from teh object table down through the other
+tables, and a cascading inner join automatically builds the right
+spbabel/fortify table that can be used directly, or as a stepping stone
+to constructing recursive list forms.
+
+The tidy initiative has show that these high-level processes can be
+abstracted into commonly used tools, but so far it's been about tidying
+up model outputs and reshaping between long and wide forms.
+
+\chapter{Final Words}\label{final-words}
+
+We have finished a nice book.
+
+\bibliography{packages.bib,book.bib}
+
+
+\end{document}
