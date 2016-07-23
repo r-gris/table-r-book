@@ -1,3 +1,44 @@
-# Methods
+# Examples
 
-We describe our methods in this chapter.
+## spbabel - two tables - round trip for sp and ggplot2
+
+The spbabel package provides a straightforward workflow for converting from sp Spatial objects to a single table of all coordinates (analogous to the fortify table), and back again. 
+
+This requires working with two tables, and can be considered as simply starting with the sp object metadata table and then flattening out the geometry of each piece of each object into a single table - this table stores the x, y coordinates, a part identifier, a hole/island identifier for parts, the order of the coordinates within a part, and the object id. This could be a single table if all of the object metadata attributes were copied onto all of the coordinates for each object - but this is both wasteful and untidy in the sense that errors can be introduced when a one-to-many relationship is duplicated across the object ID and all the metadata values. Also may be inefficient (or not given factor/character tricks, rle and so on). 
+
+Examples
+
+sp to spbabel to ggplot2
+
+ggplot2 to spbabel to sp
+
+## Relations and the difference between sp and ggplot2 forms
+
+There's a difficulty for non-experts to deal with relational data, there's a level of abstraction in the process that provides confusion. We see this in many fields, where a single table is the basic unit of analysis and the lessons of database normalization are nowhere to be seen. A common example is animal tracking data, which at the minimum stores a trip (or burst or group) ID, x, y, date-time, and may include individual or tag ID (object). Technically, these data should have a metadata table with observations about the tag deployment (date, location, recovery, animal departure/return date), an individual table with observations on the animal species, and the table of coordinates of the actual tag space-time measurements. 
+
+This is a well- recognized problem, especially in collaborative studies where the entire data set is stored in a CSV ... probably less ranting here, but the relational table example is a good one. 
+
+A key definition here is the idea of a structural index (the row or column number in a table or array) versus a relational index where the value of a key is used to match records. The relational index can be transferred from one data set to another by subsetting and appending, and survive resorting generally - but the structural index cannot - it must either be maintained in its position or be updated when the overal dataset is subsetted, or changed. 
+
+Recurrisve objects like lists in R stand in place of both structurual and relational indexes, the structure of the list is an implicit marker of the index - though it might also store a particular label. 
+
+
+
+## rgl - structural indices
+
+All rgl functions that plot linked coordinates use primitives (line segments or triangles or quads) that are encoded as indexes into coordinate arrays. There is no requirement that the coordinates be unique, but they can be. Some rgl functions are use literally as an index into 3-coords, and others use homogeneous coordinates with a 4th coord (set this to one for the 3-coords behaviour). 
+
+Rgl includes an ear clipping triangulation algorithm so that polygons can be converted to a surface composed of primitives. These surfaces are much more general than GIS polygons or triangulations, since they can "wrap -around". A clear example is given in tetrahedron3d() and in oh3d(). Ear clipping is fast, non-convex, and preserves input edges but is otherwise not suited for choosing well-formed triangles. 
+
+The crux for the storage of objects in rgl is that each object is standalone and there's no native set for storage of more than one object. 
+
+Show creation of rgl objects from Spatial
+
+creation of gris objects from Rvcg/rgl
+
+
+*This point is a general one in terms of the relational hierarchies*. 
+
+## gris - four tables with vertex topology
+
+
