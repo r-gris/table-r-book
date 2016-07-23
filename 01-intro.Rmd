@@ -4,13 +4,24 @@
 Structures and data are appropriately complex and specialized in order to ensure rigour and efficiency. 
 
 
-Spatial means more than maps in at least the sense that 
 
 
 ## Terminology
 
 Branch, piece/part, object, vertex, coordinate
 
+coordinate, point, vertex - I switch between these at times . . .
+
 object attribute metadata
 
+Spatial also means more than maps in at least the sense that all data are "spatial" beyond the fact that the data were collected at a particular place and time. All data have a "space" in which they exist, and we perform visualization, analysis and modelling in these spaces. This als applies to visualization and model structures, since the "geometries" we use such as histograms, line charts and cluster hulls to name a few can be represented using traditional geo-spatial tools - but often there's a clear disconnect between these worlds. 
 
+
+## Section on the very general meaning of "space", probably not just a terminology issue
+
+While it's not really part of my goal here, I think it's important to also be clearer on the difference between the topology and the geometry in use. The topology is the scheme by which coordinates are connected in any space and these are dimensional: 0D is a point with no extent, 1D is a line segment connecting two 0D points, and 2D is a planar region - and we can continue up in dimensions. Technically each of these is _primitives_, i.e. a single vertex, a two-vertex line segment, a three-vertex triangle, a four-vertex tetrahedron (and so on) but modern geo-spatial systems usually drop "topology" and represent a planar region as one bounded by a linear path. If we stick with the technical primitives then the topology/geometry distinction is clear: 
+
+* topological dimension is that of the primitives, 0D points, 1D line segment, 2D triangles, 3D tetrahedron, etc.
+* geometric dimension is the number of attributes applied to the vertices of a primitive, e.g. \[x,y\] or \[lon,lat,time\] or \[x,y,z,date\] or \[time,lon,temperature,magnitude]
+
+It's important to realize that _spatial_ data has no need to stick to certain conventions, and that the topology of a graph is a certain case of a spatial map. If one axis is time, and the other longitude it's not the business of the data representation to apply these distinctions - that is for the user/researcher. 

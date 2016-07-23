@@ -2,7 +2,7 @@
 
 GIS provides a table-based front-end where there is a one-to-one relationship between a geometric object, and a row in a table that contains attribute metadata about that object. I call this the "GIS contract", and you can see this in the linked selections (brushing) in QGIS, Manifold and other systems. 
 
-# The **sp** package
+## The **sp** package
 
 Spatial classes, formal inheritance, heirarchical objects. 
 
@@ -14,13 +14,13 @@ The Spatial classes provided by the sp package are very widely used because they
 
 The attribute metadata are discrete but the geometry is continuous. Spatial topology ties the geometry together, and database topology ties the system together. 
 
-# The **ggplot2** package
+## The **ggplot2** package
 
 Data frames are the fundamental unit for **ggplot2**, but for spatial data the first step is to decompose the hierarchical complexity of a Spatial object to a single data frame. 
 
 This breaks the "GIS contract", since the individual objects are now spread over multiple rows of the table of coordinates. 
 
-# Pros and cons
+## Pros and cons
 
 Ability to user-choose attributes from the data - independence of analysis from the visualization
 
