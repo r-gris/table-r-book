@@ -4,6 +4,9 @@
 
 tidyr and gggeom show that nesting can be used to always work in a single table, and sp can be emulated with single-nesting of the fortify table, or more closely with double nesting, first on object and then on piece. gggeom keeps attributes in separate lists, in order to allow for different numbers of values in each (though tables can do that too . . .). 
 
+Side notes about the difference between sp and sf, and the island/hole things versus parent for branches. 
+
+
 The main issues with nesting into one table, with nested components, are that: 
 
 * it doesn't allow for many-to-one de-duplication indexing (unless the nested component stores an index to another table - but that's not one  table). 
@@ -20,3 +23,57 @@ This provides the opportunity for an API where specialized packages provide the 
 Can we create simple idioms to encode decomposition from recursive objects generally? The cascading semi-join makes for very simple propagation of a subset from teh object table down through the other tables, and a cascading inner join automatically builds the right spbabel/fortify table that can be used directly, or as a stepping stone to constructing recursive list forms. 
 
 The tidy initiative has show that these high-level processes can be abstracted into commonly used tools, but so far it's  been about tidying up model outputs and reshaping between long and wide forms. 
+
+## A tidy version of the "sf" simple features package
+
+The idea is that we step one level down from sf, derive the raw geometry and data from rgdal2, and the push that out to sf, sp, ggplot2, ggvis/gggeom, and so on. 
+
+
+```{r}
+#devtools::install_github("edzer/rgdal2")
+
+flatten <-  function(x) {
+  if (all(c("x", "y") %in% names(x))) { # we're at the deepest level
+    as_tibble(x)
+  } else {
+    lapply(x, flatten)
+  }
+} 
+  
+flatten(list(list(list(x = 1, y = 2), list(x = 2:1, y = 3:4)), 
+        list(list(x = 1, y = 2), list(x = 2:1, y = 3:4))))
+
+readFeature = function(layer, id) {
+  ft = rgdal2::getFeature(layer, id)
+  geom = rgdal2::getGeometry(ft)
+  flatten(rgdal2::getPoints(geom, nested = TRUE))
+}
+
+#' simplification of sf::read.sf to avoid classes
+#' need to return the data_data still
+readgdal <- function(x, layer = 1L) {
+  if (!requireNamespace("rgdal2", quietly = TRUE))
+    stop("package rgdal2 required for this function; try devtools::install_github(\"edzer/rgdal2\")")
+  o <- rgdal2::openOGRLayer(x, layer)
+  ids <- rgdal2::getIDs(o)
+  srs <- rgdal2::getSRS(o)
+  p4s <- if (is.null(srs)) as.character(NA) else rgdal2::getPROJ4(srs)
+  geom <-  lapply(ids, function(id) readFeature(o, id))
+  return(geom)
+#  f <- lapply(ids, function(id) rgdal2::getFields(rgdal2::getFeature(o, id)))
+  
+ # df = data.frame(row.names = ids, apply(do.call(rbind, f), 2, unlist))
+}
+
+library(rgdal2)
+library(tibble)
+library(dplyr)
+f = system.file("example-data/continents", package = "rgdal2")
+
+## raw geometry in recursive lists
+x <- readgdal(f)
+## convert to sp object (geometry only for now)
+obj <- spbabel::sp(bind_rows(lapply(x, function(y) bind_rows(lapply(y, bind_rows, .id = "simple_feature"), .id = "part")), .id = "object") %>% 
+  transmute(object_ = object, branch_ = part, island_ = simple_feature == 1, x_ = x, y_ = y, order_ = row_number()))
+
+```

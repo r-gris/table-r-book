@@ -1,6 +1,5 @@
 # Introduction {#intro}
 
-
 Structures and data are appropriately complex and specialized in order to ensure rigour and efficiency. 
 
 Some of rogue-book chapter 1 belongs here. Also see spbabel wiki, and discussions in spbabel, spdplyr, babelfish, nf and the gis3d and polygons blog posts. 
