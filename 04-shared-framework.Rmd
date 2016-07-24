@@ -24,6 +24,29 @@ Can we create simple idioms to encode decomposition from recursive objects gener
 
 The tidy initiative has show that these high-level processes can be abstracted into commonly used tools, but so far it's  been about tidying up model outputs and reshaping between long and wide forms. 
 
+
+spbabel is the fortify model with two tables
+  : the geometry - object, part, hole, order, coordinates
+  : the metadata - object-level attributes
+
+mtable is the branch model of vertices, branches, objects
+
+p1table is the line-primitive model of vertices, line segments, objects
+
+p2table is the tri-primitive model of vertices, triangles, objects
+
+Pathways 
+
+sp -> spbabel 
+
+mtable -> spbabel 
+
+spbabel -> mtable
+
+spbabel -> sp
+
+
+
 ## A tidy version of the "sf" simple features package
 
 The idea is that we step one level down from sf, derive the raw geometry and data from rgdal2, and the push that out to sf, sp, ggplot2, ggvis/gggeom, and so on. 
