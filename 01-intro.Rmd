@@ -8,6 +8,8 @@ The polygons blog post: needs to show another cheating hole, which is to leave o
 
 ## Terminology
 
+I often use "object" to refer to an R workspace variable, as well as to a "spatial object" corresponding to a row of "metadata" and the linked geometry it belongs to .. .  need to make this clear throughout. 
+
 Branch, piece/part, object, vertex, coordinate
 
 coordinate, point, vertex - I switch between these at times . . .

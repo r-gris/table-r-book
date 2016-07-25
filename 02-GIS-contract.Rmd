@@ -12,7 +12,7 @@ The Spatial classes provided by the sp package are very widely used because they
 * powerful high-level methods for visualization, manipulation, analysis and modelling
 * 
 
-The DataFrame is the basic unit in _sp_, but it's not *actually* a data frame - every single data frame -like behaviour is provided indirectly by methods. This works very well, in that the object behaves like a data frame with "[" and has dim, nrows, and "$" ... but the disconnect between this and the underlying geometric details eventually becomes a limitation. Users routinely reach under the hood to get at the details with "@" ...
+The DataFrame is the basic unit in _sp_, but it's not *actually* a data frame: *every data frame-like behaviour is provided indirectly* by methods. This works very well, in that the object behaves like a data frame with "[" and has dim, nrows, and "$" ... but the disconnect between this and the underlying geometric details eventually becomes a limitation. Users routinely reach under the hood to get at the details with "@" ...
 
 
 The attribute metadata are discrete but the geometry is continuous - this an important point, relate to the space-is-general discussion. Spatial topology ties the geometry together, and database topology ties the system together.  
@@ -23,6 +23,115 @@ Data frames are the fundamental unit for **ggplot2**, but for spatial data the f
 
 This breaks the "GIS contract", since the individual objects are now spread over multiple rows of the table of coordinates. 
 
+
+## Breaking the contract
+
+There's a disconnect between the `sp` package and `ggplot2`, with main issue being that `ggplot2` needs everything in one table while `sp` uses a single-object with a metadata data frame interface to the underlying nested-list geometry. 
+
+Spatial in `sp` already knows what to do with these complex objects, and there's a one-to-one relationship between the rows of the "DataFrame" part and the objects in the Spatial layer. 
+
+```{r}
+library(maptools)
+sp1 <- rgdal::readOGR(system.file("shapes", package = "maptools"), "sids")
+sp1$id <- row.names(sp1)  ## ensure we have a unique attribute
+sp1$id_number <- as.numeric(sp1$id)
+spplot(sp1["id_number"])
+
+```
+
+With ggplot2 we can get the same details, but first we need to `tidy()` the `Spatial` object (was `fortify()`). This process creates a single table with every coordinate, and classifying columns that record what object and part of an object it came from, as well as the order and some other attributes. 
+
+```{r}
+library(ggplot2)
+library(broom)
+library(tibble)
+geomtab <- tidy(sp1, region = "id")  ## or ggplot2::fortify()
+head(geomtab)
+metatab <- as_tibble(as.data.frame(sp1))
+library(dplyr)
+# ftable <- ftable %>% 
+#   inner_join(spmeta[, "rownumber"] %>% mutate(id = as.character(row_number() - 1)))
+
+ggplot(geomtab) + 
+  aes(x = long, y = lat, group = group, fill = id) + 
+  geom_polygon() + 
+  scale_fill_manual(values = bpy.colors())
+
+```
+
+
+The interesting aspect here is that we've begun to juggle two R objects, where previously we had only one. It is possible to store the entire data into one table but for that we need to spread all the object metadata across every row of the geometry table. 
+
+But there are other options. One is to `nest` the tables into the metadata data frame. 
+
+```{r}
+library(purrr)
+#single_level <- as_tibble(as.data.frame(sp1)) %>%  mutate( geometry = (ftable %>% split(.$id))[unique(ftable$id)])
+library(tidyr)
+single_level <- nest(geomtab, -id, .key = geometry_) %>% inner_join(metatab)
+```
+In this aproach we have split the `tidy/fortify` geometry table across each object and placed it in the right row of the metadata data frame. 
+
+This is a nice compromise since we can now do the standard data frame operations and recreate the full structure needed for `ggplot2`. 
+
+```{r}
+(asub <- single_level %>% filter(NAME %in% c("Hertford", "Camden", "Gates")))
+
+## note, it's important that we select just the geometry_ and gg-vars, to avoid 
+## copying all attribute values to every coordinate
+ggplot(unnest(asub %>% select(NAME, geometry_))) + aes(x = long, y = lat, group = group, fill = NAME) + geom_polygon()
+```
+
+
+Each component geometry table has all the coordinates classified appropriately as before. Notice that there are only a few objects with more than one part. We choose one and look at its "geometry". 
+
+`Dare` is composed of three parts, and we have a copy of that identifier and its `hole` status on every coordinate. 
+
+```{r}
+geomtab  %>% distinct(group, id) %>% group_by(id)  %>% summarize(count = n())  %>% filter(count > 1)
+
+single_level %>% filter(id == "55") %>% select(NAME, geometry_) %>% unnest() 
+
+single_level %>% filter(id == "55") %>% select(NAME, geometry_) %>% unnest() %>% distinct(piece, .keep_all = TRUE)
+
+```
+
+It's really not necessary to put those data on the coordinates, so let's nest again. 
+
+```{r}
+double_level <- geomtab %>% 
+  group_by(group, hole, id) %>% nest(-piece, .key = group_) %>% 
+  group_by(id) %>% nest(.key = id_) %>% 
+  inner_join(metatab)
+
+```
+
+What do we have? 
+
+A tidy single data frame with one row per `Spatial` object, and recursively nested parts with their coordinates: 
+```{r}
+dim(double_level)
+str(double_level[55, "id_"])
+
+```
+
+We can make `ggplot` type selections and plot as before. 
+
+```{r}
+bsub <- double_level %>% filter(NAME %in%  c("Currituck", "Camden")) %>% select(NAME, id_) %>% unnest() %>% unnest() 
+ggplot(bsub) + aes(x = long, y = lat, group = group, fill = NAME, col = group) + geom_polygon()
+
+```
+
+Also we can restore this object to its `Spatial` form. 
+
+```{r}
+bsub_spatial <- spbabel::sp(transmute(bsub, object_ = as.character(NAME), branch_ = group, island_ = !hole, order_ = order, x_ = long, y_ = lat), 
+                            attr_tab = distinct(bsub, NAME))
+
+
+
+```
 ## Connections
 
 ggplot2 lets you reach under the abstractly, in that you can specify aesthetics and topology generally, you assign the x, y, the lower-grouping ID (for parts within objects), and the grouping ID (for objects) for the definitions of what the objects are and the attributes used. This is extremely powerful, but not generally used. 
