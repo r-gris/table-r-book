@@ -46,6 +46,9 @@ library(ggplot2)
 library(broom)
 library(tibble)
 geomtab <- tidy(sp1, region = "id")  ## or ggplot2::fortify()
+## ggplot2 creates factors
+#geomtab$piece <- levels(geomtab$piece)[geomtab$piece]
+#geomtab$group <- levels(geomtab$group)[geomtab$group]
 head(geomtab)
 metatab <- as_tibble(as.data.frame(sp1))
 library(dplyr)
@@ -111,14 +114,14 @@ What do we have?
 A tidy single data frame with one row per `Spatial` object, and recursively nested parts with their coordinates: 
 ```{r}
 dim(double_level)
-str(double_level[55, "id_"])
+str(filter(double_level, NAME == "Currituck")$id_)
 
 ```
 
 We can make `ggplot` type selections and plot as before. 
 
 ```{r}
-bsub <- double_level %>% filter(NAME %in%  c("Currituck", "Camden")) %>% select(NAME, id_) %>% unnest() %>% unnest() 
+bsub <- double_level %>% filter(NAME %in%  c("Currituck", "Camden", "Dare")) %>% select(NAME, id_) %>% unnest() %>% unnest() 
 ggplot(bsub) + aes(x = long, y = lat, group = group, fill = NAME, col = group) + geom_polygon()
 
 ```
@@ -127,14 +130,15 @@ Also we can restore this object to its `Spatial` form.
 
 ```{r}
 bsub_spatial <- spbabel::sp(transmute(bsub, object_ = as.character(NAME), branch_ = group, island_ = !hole, order_ = order, x_ = long, y_ = lat), 
-                            attr_tab = distinct(bsub, NAME))
+                            attr_tab = distinct(bsub, NAME, .keep_all = TRUE))
 
 
+plot(bsub_spatial, col = rainbow(nrow(bsub_spatial), alpha = "0.4"))
 
 ```
 ## Connections
 
-ggplot2 lets you reach under the abstractly, in that you can specify aesthetics and topology generally, you assign the x, y, the lower-grouping ID (for parts within objects), and the grouping ID (for objects) for the definitions of what the objects are and the attributes used. This is extremely powerful, but not generally used. 
+ggplot2 lets you reach under the hood in an abstract way, in that you can specify aesthetics and topology generally, you assign the x, y, the lower-grouping ID (for parts within objects), and the grouping ID (for objects) for the definitions of what the objects are and the attributes used. This is extremely powerful, but not generally used. 
 
 ggplot2 examples
 
