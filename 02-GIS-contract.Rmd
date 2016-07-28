@@ -1,4 +1,14 @@
-# The GIS contract
+```{r,include=FALSE,message=FALSE}
+library(maptools)
+library(ggplot2)
+library(broom)
+library(tibble)
+library(dplyr)
+library(purrr)
+library(tidyr)
+```
+
+# Breaking the GIS contract
 
 GIS provides a table-based front-end where there is a one-to-one relationship between a geometric object, and a row in a table that contains attribute metadata about that object. I call this the "GIS contract", and you can see this in the linked selections (brushing) in QGIS, Manifold and other systems. 
 
@@ -17,17 +27,6 @@ The DataFrame is the basic unit in _sp_, but it's not *actually* a data frame: *
 
 The attribute metadata are discrete but the geometry is continuous - this an important point, relate to the space-is-general discussion. Spatial topology ties the geometry together, and database topology ties the system together.  
 
-## The **ggplot2** package
-
-Data frames are the fundamental unit for **ggplot2**, but for spatial data the first step is to decompose the hierarchical complexity of a Spatial object to a single data frame. 
-
-This breaks the "GIS contract", since the individual objects are now spread over multiple rows of the table of coordinates. 
-
-
-## Breaking the contract
-
-There's a disconnect between the `sp` package and `ggplot2`, with main issue being that `ggplot2` needs everything in one table while `sp` uses a single-object with a metadata data frame interface to the underlying nested-list geometry. 
-
 Spatial in `sp` already knows what to do with these complex objects, and there's a one-to-one relationship between the rows of the "DataFrame" part and the objects in the Spatial layer. 
 
 ```{r}
@@ -38,6 +37,20 @@ sp1$id_number <- as.numeric(sp1$id)
 spplot(sp1["id_number"])
 
 ```
+
+
+
+
+## The **ggplot2** package
+
+Data frames are the fundamental unit for **ggplot2**, but for spatial data the first step is to decompose the hierarchical complexity of a Spatial object to a single data frame. 
+
+This breaks the "GIS contract", since the individual objects are now spread over multiple rows of the table of coordinates. 
+
+
+There's a disconnect between the `sp` package and `ggplot2`, with main issue being that `ggplot2` needs everything in one table while `sp` uses a single-object with a metadata data frame interface to the underlying nested-list geometry. 
+
+
 
 With ggplot2 we can get the same details, but first we need to `tidy()` the `Spatial` object (was `fortify()`). This process creates a single table with every coordinate, and classifying columns that record what object and part of an object it came from, as well as the order and some other attributes. 
 
@@ -66,6 +79,10 @@ ggplot(geomtab) +
 The interesting aspect here is that we've begun to juggle two R objects, where previously we had only one. It is possible to store the entire data into one table but for that we need to spread all the object metadata across every row of the geometry table. 
 
 But there are other options. One is to `nest` the tables into the metadata data frame. 
+
+## Nested data frames
+
+R data frames can now be easily nested using the `tidyr` package. 
 
 ```{r}
 library(purrr)
@@ -158,7 +175,7 @@ Ability to user-choose attributes from the data - independence of analysis from 
 
 There's a difficulty for non-experts to deal with relational data, there's a level of abstraction in the process that provides confusion. We see this in many fields, where a single table is the basic unit of analysis and the lessons of database normalization are nowhere to be seen. A common example is animal tracking data, which at the minimum stores a trip (or burst or group) ID, x, y, date-time, and may include individual or tag ID (object). Technically, these data should have a metadata table with observations about the tag deployment (date, location, recovery, animal departure/return date), an individual table with observations on the animal species, and the table of coordinates of the actual tag space-time measurements. 
 
-This is a well- recognized problem, especially in collaborative studies where the entire data set is stored in a single CSV ... [probably less ranting here,] but the relational table example is a good one. 
+This is a well-recognized problem, especially in collaborative studies where the entire data set is stored in a single CSV ... [probably less ranting here,] but the relational table example is a good one. 
 
 A key definition here is the idea of a structural index (the row or column number in a table or array) versus a relational index where the value of a key is used to match records. The relational index can be transferred from one data set to another by subsetting and appending, and survive resorting generally - but the structural index cannot - it must either be maintained in its position or be updated when the overal dataset is subsetted, or changed. 
 
