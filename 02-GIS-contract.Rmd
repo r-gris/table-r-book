@@ -12,6 +12,31 @@ library(tidyr)
 
 GIS provides a table-based front-end where there is a one-to-one relationship between a geometric object, and a row in a table that contains attribute metadata about that object. I call this the "GIS contract", and you can see this in the linked selections (brushing) in QGIS, Manifold and other systems. 
 
+There is some skepticism when it comes to the idea of using tables to store geometry, and the main concerns I've seen are
+
+- you have to copy the metadata onto every coordinate row
+- you cannot properly store polygons with holes
+
+But
+
+1. this is clearly not the case, it just means "we need two tables"
+2. you can store polygons with holes, but ggplot2 would not draw them properly
+
+These are readily fixable problems, in fact sp already shows the way in which a single-table front-end can be used to hide the messy recursive list details of the geometyr, why not go the next step and write hte front end to store just tables? 
+
+a) we can nest tables
+b) we can class lists of tables, so that all methods dispatch on the metadata table
+ - do this with S3, S4, and show the templating available by cascading the innerjoin for coordinate extraction, or the cascading semi join to apply a asubsetting down the structure. 
+ 
+I would like to see a system that accepts a standard input format, say classified vectors of coordinates, to the polypath and pathGrob functions, that both sp and gg and friends leverage. 
+
+I find it more compelling that the problems are
+
+1. Copying metadata onto coordinates has the danger of ids and values getting out of synch, but at times we also want our groupings to override the "special id" anyway. It's more dangerous that the order attribute and the groupings get out of synch, or get subsetted in ways that arent' appropriate. but as ever, our front end can protect users from making those mistakes, without also making it difficult to *really mean to make those mistakes*
+2. the ring model for apolygon is susceptible to star and other self-intersecting problems, and the winding/ evenodd rule does not apply to point in tpolygoin tests
+
+
+ 
 ## The **sp** package
 
 Spatial classes, formal inheritance, heirarchical objects. 
