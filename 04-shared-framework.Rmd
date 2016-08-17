@@ -52,7 +52,7 @@ spbabel -> sp
 The idea is that we step one level down from sf, derive the raw geometry and data from rgdal2, and the push that out to sf, sp, ggplot2, ggvis/gggeom, and so on. 
 
 
-```{r}
+```{r,eval=FALSE}
 #devtools::install_github("edzer/rgdal2")
 
 flatten <-  function(x) {

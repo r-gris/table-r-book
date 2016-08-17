@@ -20,6 +20,8 @@ Arguably, this is the same problem in sp in that it cannot give a "winding" rule
 ```{r}
 # https://edzer.github.io/UseR2016/
 
+library(spbabel)
+data(holey)
 data(air, package = "spacetime")
 library(sp)
 nds = DE_NUTS1["Niedersachsen",]
@@ -31,21 +33,24 @@ plot(spTransform(nds, merc), bgMap = bgMap, col = grey(.5, alpha = .5))
 
 library(ggplot2)
 tab <- fortify(nds)
+
+
 ## how do we keep that hole
 library(dplyr)
-filter(tab, hole) %>% group_by( "group") %>% distinct(group)
+library(ggpolypath)
+#filter(tab, hole) %>% group_by( "group") %>% distinct(group)
 
 ## treat it like a simple feature with this hideous hack
-tab$feat <- tab$group
-tab$feat[tab$hole] <- tab$feat[1]
-ggplot(tab) + aes(x = long, y = lat, group = feat, fill = id) + geom_holygon(col = "black")
+#tab$feat <- tab$group
+#tab$feat[tab$hole] <- tab$feat[1]
+ggplot(tab) + aes(x = long, y = lat, group = group, fill = id) + geom_polypath(col = "black")
 
-## if we use geom_holygon, we can do it the old way
-ggplot(tab) + aes(x = long, y = lat, group = group, fill = id) + geom_holygon(col = "black")
+## if we use geom_polypath, we can do it the old way
+ggplot(tab) + aes(x = long, y = lat, group = group, fill = id) + geom_polypath(col = "black")
 
 ## use pathGrob and it's all fine
 ggplot(filter(holey, object_ <= 2)) + 
-  aes(x = x_, y = y_, group = branch_, fill = factor(object_)) + geom_holygon(col = "black")
+  aes(x = x_, y = y_, group = branch_, fill = factor(object_)) + geom_polypath(col = "black")
 
 
 ```
