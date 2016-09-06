@@ -30,3 +30,37 @@ It's important to realize that _spatial_ data has no need to stick to certain co
 
 List examples where the topology/geometry conflation is made . . .
 
+## Animal tracking data
+
+GIS is a confused place. My perspective is mostly informed by "animal-tracking" data for creatures such as southern elephant seals and short tailed shearwaters. A pretty standard data set is a CSV table of measured location and date-time coordinates for a beast, it might look like this
+
+```
+animalID, deploymentID, longitude, latitude, datetime, measure_class
+#...
+```
+
+Is this tidy data? Does this fit standard structures for data.  
+
+The tidy data definition [from tidyr vignette](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html). 
+
+>  A variable contains all values that measure the same underlying attribute (like height, temperature, duration) 
+> across units. An observation contains all values measured on the same unit (like a person, or a day, or a race) across 
+> attributes.
+
+Our data is pretty tidy, each row tells us information about a tag location measurement, we know the individual animal, the deployment (we have to put the tag on, and retrieve it), and we know a longitude, latitude and date time. Those last three measures are discrete samples from a continuous process, i.e. the animal moving around. We ignore the 3rd spatial dimension for now. What we have is three continuous "spatial" measures and grouping attributes to describe two levels. 
+
+
+
+What does this data look like in a plot? 
+
+```R
+ggplot() + aes(x = longitude, y = latitude, group = deploymentID, col = ID) + geom_point()
+
+```
+
+
+Is this **spatial**?  Let's have a look at the OGC zoo, we have POINT, MULTIPOINT, LINESTRING, POLYGON, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION, CIRCULARSTRING, COMPOUNDCURVE, MULTICURVE, MULTISURFACE, CURVE, SURFACE, POLYHEDRALSUFACE, TIN, TRIANGLE, EMPTY. 
+
+The candidates that seem sensible are POINT, MULTIPOINT, LINESTRING, MULTILINESTRING. How do they fare for representing our data. 
+
+
