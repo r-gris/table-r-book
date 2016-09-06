@@ -35,6 +35,24 @@ I find it more compelling that the problems are
 1. Copying metadata onto coordinates has the danger of ids and values getting out of synch, but at times we also want our groupings to override the "special id" anyway. It's more dangerous that the order attribute and the groupings get out of synch, or get subsetted in ways that arent' appropriate. but as ever, our front end can protect users from making those mistakes, without also making it difficult to *really mean to make those mistakes*
 2. the ring model for apolygon is susceptible to star and other self-intersecting problems, and the winding/ evenodd rule does not apply to point in tpolygoin tests
 
+## Spatial in R
+
+R is really powerful for doing spatial in R. sp, raster, rgeos, ncdf4, spatstat, amazing. 
+
+Spatial generally is not good enough, GIS is stuck in the 1980s with shapefiles and coverages, and when it pokes out it's very bespoke and not very flexible. Flexible is the domain of modellers and scientific programmers, but too much flexibilty that doesn't take on the key advantages in GIS is painful. 
+
+## Key advantages in GIS
+
+Vector shapes are complex by default, and built to live on a database, it's a very natural fit. 
+
+Affine transform is the default, which works in a huge set of cases.  
+
+
+## Fuzzy areas
+
+Continuous vs. discrete is/isn't a strength in GIS/modelling. 
+
+
 
  
 ## The **sp** package
