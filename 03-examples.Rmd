@@ -1,5 +1,148 @@
 # Examples
 
+I've become so accustomed to decomposing Spatial data to tables that I take many aspects of it for granted. These are
+
+* flexibility to store any attributes naturall on the coordinates, parts or objects as needed
+* normalization of the entities that exist within Spatial data
+* topology, in the sense of not storing a unique coordinate more than once. 
+
+There's a divide between the sp package and ggplot2, the crux of it is that the latter wants everything in one table. 
+Spatial already knows what to do with these complex objects, and there's a one-to-one between the rows of the "DataFrame" part and the objects in the Spatial layer. 
+
+```{r}
+library(maptools)
+sp1 <- rgdal::readOGR(system.file("shapes", package = "maptools"), "sids")
+spplot(sp1["FIPS"])
+```
+
+With ggplot2 we can get the same details, but first we need to "fortify". This process creates a single table with every coordinate, plus classifying columns that record what object and part of an object it came from, as well as the order and some other attributes. 
+
+```{r}
+library(ggplot2)
+library(broom)
+ftable <- tidy(sp1)  ## or ggplot2::fortify()
+head(ftable)
+
+ggplot(ftable) + aes(x = long, y = lat, group = group, fill = id) + geom_polygon()
+
+```
+(Yes, that is the same map, it's just got a wildly different aspect ratio, colours and scale.)
+
+We did not have to tell sp about the "id" or the "group" for the geometry, since it already organizes the polygon objects its own way internally. We did have to tell it about the fill, and we chose "FIPS". Where is the FIPS for ggplot? 
+
+It happens that the `d` is a one-to-one match: for every object in sp1 there is a unique group of rows, corresponding to unique values in `ftable$id`. 
+
+
+```{r}
+print(nrow(sp1))
+print(nrow(as.data.frame(sp1)))
+```
+
+```{r}
+library(tibble)
+library(dplyr)
+
+ftable %>% group_by(id)  %>% print(n = 12)
+
+```
+
+What if we want a different organization for the fill?  Let's go for SID74 which has only 23 unique values. 
+
+```{r}
+spplot(sp1["SID74"])
+
+```
+
+To get the same result in gpplot2 we first need to join the SID74 attribute to our table of coordinates. 
+
+(This is a little tricky since we also want to avoid copying all the attributes on sp1 onto every row in ftable, and it's painful to have to remember tricks to convert numbers to character etc. etc.). 
+
+```{r}
+ftable1 <- ftable %>% inner_join(mutate(as.data.frame(sp1), id = as.character(row_number()))[, c("id", "SID74")])
+ggplot(ftable1) + aes(x = long, y = lat, group = group, fill = factor(SID74)) + geom_polygon()
+```
+
+Why would we care about copying these attributes? 
+
+Memory and processing. It's wasteful to take 100 rows of several columns of text and numbers and multiply them out by every coordinate. (Maybe it's not that wasteful here, but the general point remains - if we have 2000 copies of one thing there's more chance we'll mess it up, and get things out of synch). 
+
+```{r}
+pryr::object_size(sp1)
+## do the same join without subsetting the object attributes
+tst <- ftable %>% inner_join(mutate(as.data.frame(sp1), id = as.character(row_number())))
+pryr::object_size(tst)
+```
+
+
+## Another option
+
+Spatial objects are too complicated. Tables are simple. 
+
+Spatial objects don't allow Z, or time to sit on the coordinates (or colours, temperature ...). Tables do. 
+
+But a single table is too simple, to keep object attributes they must be copied way too much. There's also no understanding that a coordinate is shared. All of the polygons used above have a neighbouring polygon, they share edges and they share vertices. 
+
+Turn the sp object into multiple tables. 
+
+```{r}
+library(gris)  ## devtools::install_github("mdsumner/gris")
+gr <- gris(sp1)
+
+names(gr)
+
+```
+
+The "o" is for objects, "b" for branches (parts), "bXv" is branches-cross-vertices (relation table), and "v" is unique vertices. 
+
+Collectively they store everything that is in the Spatial object, but also allow further normalization since the vertices are unique, and the information about parts or objects is not duplicated. 
+
+These tables "o", "b", "bXv", "v" form an "joinable-chain", so the ggplot2 model and other forms can be easily reconstructed by combinations of table subsetting and various joins. 
+
+```{r}
+lapply(gr, nrow)
+
+## not sure why tibbles suddenly print out every row now, so I use explicit print 
+gr$o %>% print(n = 12)
+gr$b %>% print(n = 12)
+gr$bXv %>% print(n = 12)
+gr$v %>% print(n = 12)
+
+## there's no storage problem
+pryr::object_size(gr)
+```
+
+Restore the sp object to its former glory (mostly): 
+```{r}
+ sp2 <- gris:::as.SpatialPolygonsDataFrame(gr)
+
+spplot(sp2["SID74"])
+```
+
+Working with multiple tables is more complicated, but it also gives a lot of advantages:
+
+* real tables are easily ported to and from real databases
+* normalization of vertices allows topology, change one instance and the shapes using also move
+* the unique vertices are easily transferred to a planar straight line graph and triangulate, as here: http://mdsumner.github.io/2015/12/28/gis3d.html
+
+I believe that something like this provides a "common framework", something that the Spatial tools and the ggplot tools can use as a middle ground. 
+
+## rangl
+
+gris is too much at once, it's trying to flip between the primitives and branches model seamlessly. Better to stick with one or the other, and provide converter tools to do the transformations in structures. 
+
+GIS attribute data is inherently relational, but the heirarchical data structures for polygon rings and linear strings are structural. Sp takes this very seriously, it can find the right set of lists of matrices for a multi-part polygon or line by a key. The rowname of the object table keys to the ID of the Polygons or Lines object. You are not supposed to ask for the "6th row" of a data.frame, and you cannot link it to the 6th Polygons object in the structure - (although you can) - the IDs have to match. R has this ambiguity built in at a very deep level. It's handy to index a data.frame structurally, I know I want every second row from the 3rd to the 13th, `df[seq(3, 13, by = 2), ]` - but then how would you know that? A data frame is a table of rows of mixed data, so we usually do tests on the values to find what we want `subset(df, id > 2 & id < 14 & id %% 2 == 0)`. The column `id` had better be the numbers from `1:nrow(df)`, but otherwise it's generally more sensible to work on arbitrary sets that specific indexes. 
+
+Matrices and arrays are the opposite in one sense, though the same `data base select` operations are also helpful. I want to multiply all cells in the matrix `mat` where its value is less than 2 `mat[mat < 2] <- mat[mat < 2] + 10`. I guess this is a sort of middle ground between *structural* and *relational* since the relative part is the query, which values are less than 2, but the application of the change is on a specific set of identified cells in the matrix space.  The general rule is that code should be robust to new data coming in, generally tables can come in any order with duplicates and noise etc. but arrays actually define a solid space that is isomorphic to how the data is stored and interacted with.  Enough of this. 
+
+For Spatial / vector / feature / points-lines-areas data there are a number of competing issues. 
+
+* shapes are sacrosanct, carefully defined and not to be messed up
+* calculating on vertices should be fast and easy, like X * 2
+
+
+It's not hard to write constructs that make X * 2 easy
+
+
 ## spbabel - two tables - round trip for sp and ggplot2
 
 The spbabel package provides a straightforward workflow for converting from sp Spatial objects to a single table of all coordinates (analogous to the fortify table), and back again. 
@@ -20,6 +163,8 @@ Arguably, this is the same problem in sp in that it cannot give a "winding" rule
 ```{r}
 # https://edzer.github.io/UseR2016/
 
+library(spbabel)
+data(holey)
 data(air, package = "spacetime")
 library(sp)
 nds = DE_NUTS1["Niedersachsen",]
@@ -31,21 +176,24 @@ plot(spTransform(nds, merc), bgMap = bgMap, col = grey(.5, alpha = .5))
 
 library(ggplot2)
 tab <- fortify(nds)
+
+
 ## how do we keep that hole
 library(dplyr)
-filter(tab, hole) %>% group_by( "group") %>% distinct(group)
+library(ggpolypath)
+#filter(tab, hole) %>% group_by( "group") %>% distinct(group)
 
 ## treat it like a simple feature with this hideous hack
-tab$feat <- tab$group
-tab$feat[tab$hole] <- tab$feat[1]
-ggplot(tab) + aes(x = long, y = lat, group = feat, fill = id) + geom_holygon(col = "black")
+#tab$feat <- tab$group
+#tab$feat[tab$hole] <- tab$feat[1]
+ggplot(tab) + aes(x = long, y = lat, group = group, fill = id) + geom_polypath(col = "black")
 
-## if we use geom_holygon, we can do it the old way
-ggplot(tab) + aes(x = long, y = lat, group = group, fill = id) + geom_holygon(col = "black")
+## if we use geom_polypath, we can do it the old way
+ggplot(tab) + aes(x = long, y = lat, group = group, fill = id) + geom_polypath(col = "black")
 
 ## use pathGrob and it's all fine
 ggplot(filter(holey, object_ <= 2)) + 
-  aes(x = x_, y = y_, group = branch_, fill = factor(object_)) + geom_holygon(col = "black")
+  aes(x = x_, y = y_, group = branch_, fill = factor(object_)) + geom_polypath(col = "black")
 
 
 ```
