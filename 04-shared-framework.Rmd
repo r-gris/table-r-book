@@ -100,3 +100,29 @@ obj <- spbabel::sp(bind_rows(lapply(x, function(y) bind_rows(lapply(y, bind_rows
   transmute(object_ = object, branch_ = part, island_ = simple_feature == 1, x_ = x, y_ = y, order_ = row_number()))
 
 ```
+
+## Creating data structures 
+
+I realize the dplyr verbs and ggplot approach already has everything, when you use the piped group_by and arrange all of the information is already there. 
+
+We don't tend to get polygon data in fortify() form in the wild, but we always get animal tracking and GPS data in that form, and turning those into "line geometries" that also know the time stamp, depth, etc is a real missed opportunity - on CRAN you can see dozens of "trajectory" packages that really could use a more general approach.  
+
+Imagine track data from multiple GPS tags each deployed on different objects : 
+
+track_df %>% group_by(tag_id, deployment), %>% arrange(timestamp)  %>% linearize(x, y)
+
+that would give a fully fledged "line" object having removed the repeated values for grouping, and all the remaining attributes sit on the vertices, but "x/y" and timestamp are now treated specially, similar to how the grouped_df carries this information along. 
+
+Another imagined example for polygons: 
+
+poly_df %>% group_by(id, part) %>% arrange(order) %>% polypatherize(long, lat)
+
+Optionally add a driver at the end of the pipe chain like "sp()" or "sf()" or "geojson()" , "wkt()" to get the right format for a given application and it's looking like something handy. 
+
+
+I'm trying to learn the tricks of NSE in dplyr and ggvis to see how this could work. It's obvious that things like geom_polygon() for visualization and "point in polygon" tests have a shared application. 
+
+ I really think there's a grand vision here somewhere that can unify 
+
+
+
