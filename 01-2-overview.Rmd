@@ -58,7 +58,6 @@ Row-bind all matching-types tables together, in single-nesting this is the forti
 
 We name these inside-out, multiple-table approaches: 
 
-* Bespoke hierarchical (nested lists of things, sp, sf)
 * Fortify - two tables, Object and Branch-Coordinate. 
 * Branch - three tables, Object, Branch, Coordinate
 
@@ -75,13 +74,13 @@ There are only 0D- and 1D- primitives in simple features (caveat for exotic type
 
 The line-segment model, or Planar Straight Line Graph (PSLG) can be used to generate two more forms: 
 
-* identify 3-way vertex-segmnet relations to generate arc-node model (TopoJSON)
+* identify 3-way vertex-segment relations to generate arc-node model (TopoJSON)
 * generate 2D primitives from line segments via modified-Delaunay (RTriangle), or ear-clipping (rgl)
 
 
 Now we have the following main types of representation
 
-* Bespoke hierarchical
+* Bespoke hierarchical (nested lists of things)
 * Nested data frames (single or double)
 * Fortify
 * Branch
