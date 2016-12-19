@@ -1,13 +1,14 @@
 
-# Overview {#overview}
+# Hierarchical spatial data
 
 There is a strong relationship between the hierarchical forms of data structure used in geo-spatial analysis and in the grammars of data analysis and graphics. Currently the translation between geo-spatial forms and the modern analysis and graphics grammars is disjointed and sometimes awkward. In this overview we present a way of classifying and structuring geo-spatial forms that is consistent and complementary to those used in the grammars, and allows the technical and specialist requirements of geo-spatial to be modularized appropriately, while allowing other uses to be more flexible and available. 
 
 GIS-based vector data provides a complex set of data structures, and the [modern R form](https://cran.r-project.org/package=sf) is compliant with the [simple features standard](https://en.wikipedia.org/wiki/Simple_Features). In R these are stored in *nested lists* where the physical structure matches the logical structures in the data. 
 
-Nested lists of data can be inverted and stored in an *inside-out* way as normal data frames. Various packages provide conversions between nested and table forms,  but there is no overall approach that works in the general case and no categorization of the common conversions that are most useful. Worse, there are fragmented approaches spread across dozens of implementations without one central framework or vision.  There is room for extension and improvement to the handling of data structures with conversion tools, and ideally a central form-converter framework. Here we focus on GIS vector data to show the limitations of the nested structures, and how being able to flip between representations provides much added power and provides a clear pathway forward for many complex problems that don't fit in the traditional GIS mold.
+A `Spatial` object (`sp`) is a complex nested list of coordinates stored in matrices with S4 classes, with each top-level item linked by ID to rows in a data frame. A newer form to replace `Spatial` that handles more kinds of data sets is simple features in `sf`. Here the coordinates are in nested lists of matrices or vectors.  The `sf` package stores each object with its data frame row rather than by a remote link ID, and the package is compliant with the simple features standard which removes some ambiguities that existed in `sp`. The simple features approach is more aligned with the tidyverse principles, but does this by way of a formal API to switch from lists to data frames in pre-specified ways. 
 
-A Spatial object is a complex nested list of coordinates stored in matrices with S4 classes, with each top-level item linked by ID to rows in a data frame. A newer form to replace Spatial that handles more kinds of data sets is simple features in sf. Here the coordinates are in nested lists of matrices, except for one case where a single POINT is an atomic vector.  The `sf` package stores each object with its data frame row rather than by a remote link ID, and the package is compliant with the simple features standard which removes some ambiguities that existed in `sp`. The simple features approach is more aligned with the tidyverse principles, but does this by way of a formal API to switch from lists to data frames in pre-specified ways. 
+Nested lists of data can be inverted and stored in an *inside-out* way as normal data frames. Various packages provide conversions between nested and table forms,  but there is no overall approach that works in the general case and no categorization of the common conversions that are most useful. Worse, there are fragmented approaches spread across dozens of implementations without one central framework or vision.  There is room for extension and improvement to the handling of data structures with conversion tools, and ideally a central form-converter framework. Here we focus on GIS vector data to show the limitations of the nested structures, and how being able to flip between representations provides much added power and provides a clear pathway forward for many complex problems that don't fit in the traditional GIS model.
+
 
 We can define an *always data frame* analog to these data structures in two quite different ways. 
 
@@ -50,12 +51,9 @@ A nested data frame sitting in a parent row doesn't require an explicit value fo
 
 1. Nest once, so each row has its own Coordinates table. In this form the geometry is exactly like the output of `ggplot2::fortify`, you could row bind each of these tables together with their parent's ID and use `geom_polygon` directly. 
 
-2. Nest twice so each row has a Branch table, which in turn has its Vertex table. In this form, the branches become proper entities, and values like "hole status", or "ring parent" can be stored here. The Vertex table must keep track of the line/poly path order however, or guarantee that it will always match the structural order. 
+2. Nest twice so each row has a Branch table, which in turn has its Vertex table. In this form, the branches become proper entities, and values like "hole status", or "ring parent" can be stored here. The Vertex table must keep track of the line/poly path order however, or guarantee that it will always match the structural order.[^1]
 
-Nesting is a completely valid way to store structures analogous to the `Spatial` and `sf` classes, so that row-apply operations may be done on the geometry within the single table list column. A fortify-like workflow can be used with unnest(x %>% select(object, attr,geom)) but this explodes the object-level row for every branch/vertex. 
-
-*Nesting three times* for simple features multipolygons is a possibility but doesn't neessarily add clarity to the model? Does a hole need to be stored recursively inside its parent ring? Should a second line path be stored as a child of the first?  These questions raise more issues about the limitations of simple features and don't add clarity ...
-
+Tidy nesting is a robust way to store structures analogous to the `Spatial` and `sf` classes, so that row-apply operations may be done on the geometry within the single table list column. It's not clear if these are useful structures in their own right, but they are helpful for explaining the complexity in recursive structures and as intermediates for converting between different forms. 
 
 # Relational view
 
@@ -77,7 +75,7 @@ Once in Branch form, we can go further by converting into Primitives form, which
 
 The steps to convert to Primitives are: 
 
-* de-duplicate vertices in geometry-space[^1] 
+* de-duplicate vertices in geometry-space[^2] 
 * convert from  from path to line segment model (a Planar Straight Line Graph)
 
 In this form, we have a primitives model that is able to store all the objects of simple features in a decomposed form. This excludes triangulations, but in simple features those are stored like explicit triangle branches, not a dense mesh of vertices. In the next stage we are able to have 2D primitives with efficient use of a shared vertex pool. 
@@ -110,4 +108,6 @@ Each of these forms has direct applications for a variety of tasks, either for t
 * The branch and primitives models may be combined, so that the branch table records the way the original simple features are constructed by a branch-link-primitives table - so we can have a perfect record of the original data, recreatable if needed - or completely reworked by operations on primitives that when recombined provide a modified object.
 
 
-[^1]: De-duplication may be in any dimensional geometric space, but for simple features this would rarely make sense to not be X,Y. 
+[^1]: *Nesting three times* for simple features multipolygons is a possibility but doesn't neessarily add clarity to the model? Does a hole need to be stored recursively inside its parent ring? Should a second line path be stored as a child of the first?  
+[^2]: De-duplication may be in any dimensional geometric space, but for simple features this would rarely make sense to not be X,Y. 
+
