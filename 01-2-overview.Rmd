@@ -1,8 +1,9 @@
+
 # Overview {#overview}
 
 There is a strong relationship between the hierarchical forms of data structure used in geo-spatial analysis and in the grammars of data analysis and graphics. Currently the translation between geo-spatial forms and the modern analysis and graphics grammars is disjointed and sometimes awkward. In this overview we present a way of classifying and structuring geo-spatial forms that is consistent and complementary to those used in the grammars, and allows the technical and specialist requirements of geo-spatial to be modularized appropriately, while allowing other uses to be more flexible and available. 
 
-GIS-based vector data provides a complex set of data structures, and the [modern R form](https://cran.r-project.org/package=sf) is compliant with the [simple features standard](https://en.wikipedia.org/wiki/Simple_Features). In R these are stored in *nested lists* where the physical structure of the data is isomorphic to an interpretation of the logical structures in the data. 
+GIS-based vector data provides a complex set of data structures, and the [modern R form](https://cran.r-project.org/package=sf) is compliant with the [simple features standard](https://en.wikipedia.org/wiki/Simple_Features). In R these are stored in *nested lists* where the physical structure matches the logical structures in the data. 
 
 Nested lists of data can be inverted and stored in an *inside-out* way as normal data frames. Various packages provide conversions between nested and table forms,  but there is no overall approach that works in the general case and no categorization of the common conversions that are most useful. Worse, there are fragmented approaches spread across dozens of implementations without one central framework or vision.  There is room for extension and improvement to the handling of data structures with conversion tools, and ideally a central form-converter framework. Here we focus on GIS vector data to show the limitations of the nested structures, and how being able to flip between representations provides much added power and provides a clear pathway forward for many complex problems that don't fit in the traditional GIS mold.
 
@@ -35,8 +36,7 @@ The types of entities that we deal with are:
 
 Use "Branch" as a general term for "part" or "piece" of an individual Object (rather than "ring", "linestring", "coordinate" in the specific cases). Branch really means an isolated connected topology, i.e. "path" as in a line-string path, or a polygon ring path - but can refer to a single point in the case of "multi points". 
 
-Use "Primitive" for the general case, 0D-Primitive is single-vertex coordinate, 1D-Primitive is two-vertex line segment, a 2D Primitive
-is a triangle. 
+Use "Primitive" for the general case, 0D-Primitive is single-vertex coordinate, 1D-Primitive is two-vertex line segment, a 2D Primitive is a triangle.
 
 There might be a separate table for each kind of primitive, or in wide form they can be kept together in a single table. There are long- and wide- forms for the primitives link tables, but in wide form they must have only one type (a column per vertex ID).   Branch-link tables must always be long because they have varying numbers of coordinates per branch. 
 
@@ -61,6 +61,9 @@ Nesting is a completely valid way to store structures analogous to the `Spatial`
 
 "Relations"" are tables, referring to the task of keeping related properties together in the same row. In this view we use a scheme that will be familiar to users of databases, where a given table stores entity data. The entities are objects, branches, vertices and one-to-many links. Nesting approaches avoid the need for links, but also preclude the ability to remove duplications. Removing duplications is a key requirement for topological operations and for providing extensibility to spatial data. 
 
+
+## Entities
+
 Row-bind all entity tables together, in single-nesting this is the fortify approach used in `ggplot2` for `sp`, in double-nesting this gives us three tables. 
 
 We name these inside-out, multiple-table approaches: 
@@ -68,37 +71,43 @@ We name these inside-out, multiple-table approaches:
 * Fortify - two tables, Object and Branch-Coordinate. 
 * Branch - three tables, Object, Branch, Coordinate
 
-Once in Branch form, we can go further by converting into Primitives form, which provides data structures and techniques not supported by simple features or any general GIS standard. 
+## Primitives 
 
+Once in Branch form, we can go further by converting into Primitives form, which provides data structures and techniques not supported by simple features or any general GIS standard. 
 
 The steps to convert to Primitives are: 
 
 * de-duplicate vertices in geometry-space[^1] 
-* convert from  from path to line segment model (PSLG, 1D Primitives, same meaning)
+* convert from  from path to line segment model (a Planar Straight Line Graph)
 
+In this form, we have a primitives model that is able to store all the objects of simple features in a decomposed form. This excludes triangulations, but in simple features those are stored like explicit triangle branches, not a dense mesh of vertices. In the next stage we are able to have 2D primitives with efficient use of a shared vertex pool. 
 
-There are only 0D- and 1D- primitives in simple features (caveat for exotic types that are simple-features compliant by making exceptions to the branch-based standard). 
+## Beyond standard spatial forms 
 
 The line-segment model, or Planar Straight Line Graph (PSLG) can be used to generate two more forms: 
 
-* identify 3-way vertex-segment relations to generate arc-node model (TopoJSON)
-* generate 2D primitives from line segments via modified-Delaunay (RTriangle), or ear-clipping (rgl)
+* identify 3-way vertex-segment relations to generate arc-node model ('TopoJSON')
+* generate 2D primitives from line segments via modified-Delaunay (`RTriangle`), or ear-clipping (`rgl`)
 
+(The doubly-connected edge list is another data structure enabled by the PSLG approach. )
 
 Now we have the following main types of representation
 
 * Bespoke hierarchical (nested lists of things)
-* Nested data frames (single or double)
-* Fortify
-* Branch
-* Primitives
+* Tidy hierarchical (nested data frames, single or double)
+* Fortify (two tables, geometry and object metadata)
+* Branch (three tables, coordinates, branches, objects)
+* Primitives (usually four tables, object, primitives, links, vertices)
 
 Each of these forms has direct applications for a variety of tasks, either for transferring between forms or for applications that are more efficient in a given form. 
 
 
 ## Advantages
 
-* parts are identifiable and track-able - i.e. size of rings, length of line strings - in simple features we need to explode an object, badge it 
-## Notes
+* in the branch model parts are identifiable and track-able - i.e. size of rings, length of line strings - in simple features we need to explode an object, badge every part with an ID and track those
+* higher dimensional topological forms are provided naturally, the 2D primitives approach fits naturally as an extension to 1D primitives model
+* entity tables provide unlimited room for extra information in the right places, i.e. length, area, duration, name can be stored on branches or primitives as needed and used for aesthetics in visualizations. For a triangulated surface with a Z geometry, this belongs on the unique vertex table and not on the link-instances-of-coordinates. For GPS data, we can densify the X-Y planar coordinates (i.e intersecting tracks at a depot) while keeping individual track time, measurement information on the link-instance table. 
+* The branch and primitives models may be combined, so that the branch table records the way the original simple features are constructed by a branch-link-primitives table - so we can have a perfect record of the original data, recreatable if needed - or completely reworked by operations on primitives that when recombined provide a modified object.
+
 
 [^1]: De-duplication may be in any dimensional geometric space, but for simple features this would rarely make sense to not be X,Y. 
