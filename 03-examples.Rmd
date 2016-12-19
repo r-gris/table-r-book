@@ -1,6 +1,6 @@
 # Examples
 
-I've become so accustomed to decomposing Spatial data to tables that I take many aspects of it for granted. These are
+Decomposing spatial data to tables has a number of advantages. These are
 
 * flexibility to store any attributes naturall on the coordinates, parts or objects as needed
 * normalization of the entities that exist within Spatial data
