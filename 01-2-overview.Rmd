@@ -108,6 +108,13 @@ Each of these forms has direct applications for a variety of tasks, either for t
 * entity tables provide unlimited room for extra information in the right places, i.e. length, area, duration, name can be stored on branches or primitives as needed and used for aesthetics in visualizations. For a triangulated surface with a Z geometry, this belongs on the unique vertex table and not on the link-instances-of-coordinates. For GPS data, we can densify the X-Y planar coordinates (i.e intersecting tracks at a depot) while keeping individual track time, measurement information on the link-instance table. 
 * The branch and primitives models may be combined, so that the branch table records the way the original simple features are constructed by a branch-link-primitives table - so we can have a perfect record of the original data, recreatable if needed - or completely reworked by operations on primitives that when recombined provide a modified object.
 
+## Existing implementations
+
+The multiple-table approach described here is used in the following packages. 
+
+* **rbgm** - [Atlantis Box Geometry Model](https://github.com/AustralianAntarcticDivision/rbgm), a "doubly-connected edge-list" form of linked faces and boxes in a spatially-explicit 3D ecosystem model
+* **rangl** - [Primitives for Spatial data](https://github.com/r-gris/rangl), a generalization of GIS forms with simple 3D plotting
+* **spbabel** - [Translators for R Spatial](https://github.com/mdsumner/spbabel), tools to convert from and to spatial forms, provides the general decomposition framework for branches, used by `rangl`
 
 [^1]: *Nesting three times* for simple features multipolygons is a possibility but doesn't neessarily add clarity to the model? Does a hole need to be stored recursively inside its parent ring? Should a second line path be stored as a child of the first?  
 [^2]: De-duplication may be in any dimensional geometric space, but for simple features this would rarely make sense to not be X,Y. 
