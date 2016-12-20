@@ -108,6 +108,14 @@ Each of these forms has direct applications for a variety of tasks, either for t
 * entity tables provide unlimited room for extra information in the right places, i.e. length, area, duration, name can be stored on branches or primitives as needed and used for aesthetics in visualizations. For a triangulated surface with a Z geometry, this belongs on the unique vertex table and not on the link-instances-of-coordinates. For GPS data, we can densify the X-Y planar coordinates (i.e intersecting tracks at a depot) while keeping individual track time, measurement information on the link-instance table. 
 * The branch and primitives models may be combined, so that the branch table records the way the original simple features are constructed by a branch-link-primitives table - so we can have a perfect record of the original data, recreatable if needed - or completely reworked by operations on primitives that when recombined provide a modified object.
 
+### Key examples
+
+* Level-3 bins for ocean colour
+* BGM doubly-connected edge-list model
+* continuous variation across polygon surfaces
+* vector data fusion
+* wireframe curvilinear rasters
+
 ## Existing implementations
 
 The multiple-table approach described here is used in the following packages. 
